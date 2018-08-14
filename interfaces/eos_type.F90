@@ -13,8 +13,9 @@ module eos_type_module
   integer, parameter :: eos_input_ps = 6  ! p, s are inputs
   integer, parameter :: eos_input_ph = 7  ! p, h are inputs
   integer, parameter :: eos_input_th = 8  ! T, h are inputs
+  integer, parameter :: eos_input_pe = 9  ! p, e are inputs
 
-  ! these are used to allow for a generic interface to the 
+  ! these are used to allow for a generic interface to the
   ! root finding
   integer, parameter :: itemp = 1
   integer, parameter :: idens = 2
@@ -59,7 +60,7 @@ module eos_type_module
 #ifdef CUDA
   attributes(managed) :: mintemp, maxtemp, mindens, maxdens
   attributes(managed) :: minx, maxx, minye, maxye, mine, maxe
-  attributes(managed) :: minp, maxp, mins, maxs, minh, maxh  
+  attributes(managed) :: minp, maxp, mins, maxs, minh, maxh
 #endif
 
   !$acc declare &
@@ -209,7 +210,7 @@ contains
     to_eos % dedX(:) = from_eos % dedX(:)
     to_eos % dpdX(:) = from_eos % dpdX(:)
     to_eos % dhdX(:) = from_eos % dhdX(:)
-    
+
     to_eos % dpdA = from_eos % dpdA
     to_eos % dpdZ = from_eos % dpdZ
     to_eos % dedA = from_eos % dedA

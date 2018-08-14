@@ -19,12 +19,13 @@ endif
 
 WRAP_DIR := $(TmpBuildDir)/py
 # where do we want to put the f90wrap files?
-KIND_MAP := ../../kind_map
+KIND_MAP := $(MICROPHYSICS_HOME)/util/python/kind_map
 # where is the kind map file?
 F90_FILE_PREFIX := ../../$(f77EXETempDir)/$(F90_PREFIX)
 # where are the f90 files we want to wrap?
 
 eos: libsrc.a $(objEXETempDir)/eos.o $(objEXETempDir)/eos_type.o $(objEXETempDir)/network.o
+	cp $(MICROPHYSICS_HOME)/util/python/AMReX_* .
 	mkdir -p $(WRAP_DIR)
 	cd $(WRAP_DIR); f90wrap -c -m eos $(F90_FILE_PREFIX)eos.F90  $(F90_FILE_PREFIX)eos_type.F90  $(F90_FILE_PREFIX)network.F90 -k $(KIND_MAP) -P
 	f2py-f90wrap -I$(objEXETempDir)/ -c -m _eos -lsrc $(WRAP_DIR)/f90wrap_*.f90 -L. $(objEXETempDir)/*.o
@@ -33,6 +34,7 @@ eos: libsrc.a $(objEXETempDir)/eos.o $(objEXETempDir)/eos_type.o $(objEXETempDir
 	echo "eos.eos_module.eos_init()" >> eos/__init__.py
 	echo "eos.network.network_init()" >> eos/__init__.py
 	rmdir $(WRAP_DIR)/eos
+	rm AMReX_*
 
 libsrc.a: $(objEXETempDir)/eos.o $(objEXETempDir)/eos_type.o $(objEXETempDir)/network.o $(objEXETempDir)/AMReX_error_mod.o
 	${LIBTOOL} $@ $?

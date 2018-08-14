@@ -1,7 +1,6 @@
 AMREX_HOME ?= /path/to/amrex
 MICROPHYSICS_HOME ?= /path/to/Castro
 
-
 # system blas
 BLAS_LIBRARY ?= -lopenblas
 
@@ -28,6 +27,7 @@ all: build_status eos
 	@echo SUCCESS
 
 build_status:
+	cp $(MICROPHYSICS_HOME)/util/python/AMReX_* .
 	$(AMREX_HOME)/Tools/C_scripts/describe_sources.py \
           --git_names "Castro AMReX Microphysics" \
           --git_dirs "$(TOP) $(AMREX_HOME) $(MICROPHYSICS_HOME)"
@@ -214,7 +214,7 @@ $(objEXETempDir)/AMReX_buildInfo.o: .FORCE
 #------------------------------------------------------------------------------
 
 include $(AMREX_HOME)/Tools/GNUMake/Make.rules
-include Make.f2py
+include $(MICROPHYSICS_HOME)/util/python/Make.f2py
 
 clean::
 	$(SILENT) $(RM) extern.F90

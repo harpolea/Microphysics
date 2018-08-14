@@ -4,7 +4,7 @@
 !
 ! The ratio of specific heats (gamma) is allowed to vary.  NOTE: the
 ! expression for entropy is only valid for an ideal MONATOMIC gas
-! (gamma = 5/3).  
+! (gamma = 5/3).
 
 module actual_eos_module
 
@@ -16,7 +16,7 @@ module actual_eos_module
 
   implicit none
 
-  character (len=64), public :: eos_name = "gamma_law_general"  
+  character (len=64), public :: eos_name = "gamma_law_general"
 
   double precision, allocatable, save :: gamma_const
 
@@ -27,7 +27,7 @@ module actual_eos_module
 #ifdef CUDA
   attributes(managed) :: gamma_const, assume_neutral
 #endif
- 
+
 contains
 
   subroutine actual_eos_init
@@ -38,7 +38,7 @@ contains
 
     allocate(gamma_const)
     allocate(assume_neutral)
- 
+
     ! constant ratio of specific heats
     if (eos_gamma .gt. 0.d0) then
        gamma_const = eos_gamma
@@ -49,7 +49,7 @@ contains
     assume_neutral = eos_assume_neutral
 
     !$acc update device(gamma_const, eos_assume_neutral)
-    
+
   end subroutine actual_eos_init
 
 
@@ -74,13 +74,13 @@ contains
     !$gpu
 
     ! Calculate mu.
-    
+
     if (assume_neutral) then
        state % mu = state % abar
     else
        state % mu = ONE / sum( (ONE + zion(:)) * state % xn(:) * aion_inv(:) )
     endif
-    
+
     !-------------------------------------------------------------------------
     ! For all EOS input modes EXCEPT eos_input_rt, first compute dens
     ! and temp as needed from the inputs.
@@ -107,7 +107,7 @@ contains
     case (eos_input_tp)
 
        ! temp, pres, and xmass are inputs
-       
+
        ! Solve for the density:
        ! p = rho k T / (mu m_nucleon)
 
@@ -125,18 +125,27 @@ contains
     case (eos_input_re)
 
        ! dens, energy, and xmass are inputs
-       
+
        ! Solve for the temperature
        ! e = k T / [(mu m_nucleon)*(gamma-1)]
 
        state % T   = state % e * state % mu * m_nucleon * (gamma_const-ONE) / k_B
 
+    case(eos_input_pe)
+
+        ! pressure, energy, and xmass are inputs
+
+        ! Solve for the density
+        ! e = k T / [(mu m_nucleon)*(gamma-1)]
+
+        state % rho = state % p / state % e / (gamma_const-ONE)
+
     case (eos_input_ps)
 
        ! pressure, entropy, and xmass are inputs
-       
+
        ! Solve for the temperature
-       ! Invert Sackur-Tetrode eqn (below) using 
+       ! Invert Sackur-Tetrode eqn (below) using
        ! rho = p mu m_nucleon / (k T)
 
        state % T  = state % p**(TWO/FIVE) * &
@@ -145,13 +154,13 @@ contains
 
        ! Solve for the density
        ! rho = p mu m_nucleon / (k T)
-       
+
        state % rho =  state % p * state % mu * m_nucleon / (k_B * state % T)
 
     case (eos_input_ph)
 
        ! pressure, enthalpy and xmass are inputs
-       
+
        ! Solve for temperature and density
 
        state % rho = state % p / state % h * gamma_const / (gamma_const - ONE)
@@ -172,14 +181,14 @@ contains
 #if !(defined(ACC) || defined(CUDA))
        call amrex_error('EOS: invalid input.')
 #endif
-       
+
     end select
-    
+
     !-------------------------------------------------------------------------
     ! Now we have the density and temperature (and mass fractions /
     ! mu), regardless of the inputs.
     !-------------------------------------------------------------------------
-           
+
     Tinv = ONE / state % T
     rhoinv = ONE / state % rho
 
@@ -196,7 +205,7 @@ contains
     state % s = (k_B/(state % mu*m_nucleon))*(2.5_rt + &
          log( ( (state % mu*m_nucleon)**2.5_rt * rhoinv )*(k_B * state % T)**1.5_rt * fac ) )
 
-    ! Compute the thermodynamic derivatives and specific heats 
+    ! Compute the thermodynamic derivatives and specific heats
     state % dpdT = state % p * Tinv
     state % dpdr = state % p * rhoinv
     state % dedT = state % e * Tinv
@@ -233,12 +242,12 @@ contains
   end subroutine actual_eos
 
   subroutine actual_eos_finalize
-    
+
     implicit none
 
     deallocate(gamma_const)
     deallocate(assume_neutral)
-  
+
   end subroutine actual_eos_finalize
 
 end module actual_eos_module
