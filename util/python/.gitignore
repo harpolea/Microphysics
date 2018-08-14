@@ -1,0 +1,4 @@
+eos/*
+tmp_build_dir/*
+*.so
+*.a

@@ -24,7 +24,7 @@ endif
 
 include $(AMREX_HOME)/Tools/GNUMake/Make.defs
 
-all: build_status $(executable)
+all: build_status eos
 	@echo SUCCESS
 
 build_status:
@@ -214,6 +214,7 @@ $(objEXETempDir)/AMReX_buildInfo.o: .FORCE
 #------------------------------------------------------------------------------
 
 include $(AMREX_HOME)/Tools/GNUMake/Make.rules
+include Make.f2py
 
 clean::
 	$(SILENT) $(RM) extern.F90
